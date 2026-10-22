@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Guard - Terms & Conditions</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Privacy Guard</h1>
+
+        <h2>Terms & Conditions</h2>
+
+        <p>
+            Welcome to Privacy Guard. This tool helps you understand
+            important terms and conditions before accepting them.
+        </p>
+
+        <label for="terms">Paste Terms & Conditions:</label>
+
+        <textarea id="terms"
+            placeholder="Paste the Terms & Conditions here..."></textarea>
+
+        <br><br>
+
+        <button onclick="analyzeTerms()">Analyze Terms</button>
+
+        <div id="result"></div>
+
+        <br>
+
+        <button onclick="goNext()">Next →</button>
+
+    </div>
+
+    <script src="script.js"></script>
+
+    <script>
+        function goNext() {
+            window.location.href = "page3.html";
+        }
+    </script>
+
+</body>
+</html>

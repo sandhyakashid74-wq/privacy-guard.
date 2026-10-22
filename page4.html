@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Guard - Final Result</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Privacy Guard</h1>
+
+        <h2>🔍 Privacy Analysis Result</h2>
+
+        <p>
+            Here is the summary of the Terms & Conditions analysis.
+        </p>
+
+        <div id="result">
+
+            <div class="risk risk.high">
+                <h3>⚠️ High Risk Terms</h3>
+                <p>
+                    These terms may involve collection or sharing
+                    of personal information.
+                </p>
+            </div>
+
+            <div class="risk risk.medium">
+                <h3>⚠️ Medium Risk Terms</h3>
+                <p>
+                    These terms may request additional permissions
+                    or access to user data.
+                </p>
+            </div>
+
+            <div class="risk">
+                <h3>✅ Safe / Low Risk Terms</h3>
+                <p>
+                    These terms appear to have relatively low
+                    privacy concerns.
+                </p>
+            </div>
+
+        </div>
+
+        <br>
+
+        <button onclick="goBack()">← Back</button>
+
+        <button onclick="goHome()">🏠 Home</button>
+
+    </div>
+
+    <script>
+        function goBack() {
+            window.location.href = "page3.html";
+        }
+
+        function goHome() {
+            window.location.href = "index.html";
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | My Website</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #dbeafe, #ede9fe);
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 400px;
+      padding: 35px 28px;
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    h1 {
+      text-align: center;
+      color: #1e3a8a;
+      margin: 0 0 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 28px;
+    }
+
+    label {
+      display: block;
+      margin: 16px 0 7px;
+      font-weight: bold;
+      color: #334155;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    input:focus {
+      outline: 2px solid #93c5fd;
+      border-color: #2563eb;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .primary:hover {
+      background: #1d4ed8;
+    }
+
+    .google {
+      background: white;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+
+    .google:hover {
+      background: #f8fafc;
+    }
+
+    .switch {
+      text-align: center;
+      margin-top: 22px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .switch a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #message {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="login-box">
+    <h1 id="heading">Welcome Back!</h1>
+    <p class="subtitle" id="subtitle">
+      Login to continue to your website
+    </p>
+
+    <form id="loginForm">
+      <label for="email">Email Address</label>
+      <input
+        type="email"
+        id="email"
+        placeholder="Enter your email"
+        autocomplete="email"
+        required
+      >
+
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        placeholder="Enter your password"
+        autocomplete="current-password"
+        minlength="6"
+        required
+      >
+
+      <button class="primary" id="submitBtn" type="submit">
+        Login
+      </button>
+    </form>
+
+    <button class="google" id="googleBtn" type="button">
+      Continue with Google
+    </button>
+
+    <p class="switch">
+      <span id="switchText">Don't have an account?</span>
+      <a href="#" id="switchBtn">Sign Up</a>
+    </p>
+
+    <p id="message" role="status" aria-live="polite"></p>
+  </main>
+
+  <script type="module">
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      GoogleAuthProvider,
+      signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    // Replace these values with your Firebase project config.
+    const firebaseConfig = {
+  apiKey: "AIzaSyAN_6jDIvZPqDZbJgNnmyQgQpSJr1e0gU4",
+  authDomain: "mywebsite-de8be.firebaseapp.com",
+  projectId: "mywebsite-de8be",
+  storageBucket: "mywebsite-de8be.firebasestorage.app",
+  messagingSenderId: "191768926935",
+  appId: "1:191768926935:web:c913e01f1c0e128384ee92",
+  measurementId: "G-BWDYVX0N85"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    const form = document.getElementById("loginForm");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const message = document.getElementById("message");
+    const submitBtn = document.getElementById("submitBtn");
+    const googleBtn = document.getElementById("googleBtn");
+    const switchBtn = document.getElementById("switchBtn");
+    const switchText = document.getElementById("switchText");
+    const heading = document.getElementById("heading");
+    const subtitle = document.getElementById("subtitle");
+    const passwordLabel = document.querySelector(
+      'label[for="password"]'
+    );
+
+    let isSignup = false;
+    let busy = false;
+
+    function showMessage(text, isError = true) {
+      message.textContent = text;
+      message.style.color = isError ? "#dc2626" : "#15803d";
+    }
+
+    function setBusy(value) {
+      busy = value;
+      submitBtn.disabled = value;
+      googleBtn.disabled = value;
+      switchBtn.style.pointerEvents = value ? "none" : "auto";
+      submitBtn.textContent = value
+        ? "Please wait..."
+        : isSignup ? "Create Account" : "Login";
+    }
+
+    function friendlyError(error) {
+      const errors = {
+        "auth/invalid-email": "Please enter a valid email address.",
+        "auth/invalid-credential": "Incorrect email or password.",
+        "auth/email-already-in-use": "This email is already registered.",
+        "auth/weak-password": "Please choose a stronger password.",
+        "auth/popup-closed-by-user": "Google sign-in was cancelled.",
+        "auth/popup-blocked": "Allow popups and try again.",
+        "auth/unauthorized-domain":
+          "Add this website's domain in Firebase Authentication settings.",
+        "auth/network-request-failed":
+          "Network error. Please check your internet."
+      };
+
+      return errors[error.code] ||
+        "Something went wrong. Please try again.";
+    }
+
+    // If already logged in, go to homepage.
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.location.replace("index.html");
+      }
+    });
+
+    // Email/password login or signup.
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (busy) return;
+
+      setBusy(true);
+      showMessage("");
+
+      try {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (isSignup) {
+          await createUserWithEmailAndPassword(
+            auth, email, password
+          );
+        } else {
+          await signInWithEmailAndPassword(
+            auth, email, password
+          );
+        }
+
+        // Firebase auth state listener redirects to index.html.
+      } catch (error) {
+        showMessage(friendlyError(error));
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    // Google login.
+    googleBtn.addEventListener("click", async () => {
+      if (busy) return;
+
+      setBusy(true);
+      showMessage("");
+
+      try {
+        await signInWithPopup(auth, googleProvider);
+        // Auth state listener redirects to index.html.
+      } catch (error) {
+        showMessage(friendlyError(error));
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    // Switch between login and signup.
+    switchBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (busy) return;
+
+      isSignup = !isSignup;
+      heading.textContent = isSignup
+        ? "Create Account"
+        : "Welcome Back!";
+      subtitle.textContent = isSignup
+        ? "Create an account to get started"
+        : "Login to continue to your website";
+      submitBtn.textContent = isSignup
+        ? "Create Account"
+        : "Login";
+      switchText.textContent = isSignup
+        ? "Already have an account?"
+        : "Don't have an account?";
+      switchBtn.textContent = isSignup ? "Login" : "Sign Up";
+      passwordInput.autocomplete = isSignup
+        ? "new-password"
+        : "current-password";
+      showMessage("");
+    });
+  </script>
+</body>
+</html>
